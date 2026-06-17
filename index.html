@@ -139,11 +139,14 @@ nav button:hover,nav button.active{color:#f5e8c8;border-bottom:2px solid #c8a050
   <button onclick="showPage('mappa',this)">🗺 Mappa</button>
   <button onclick="showPage('spiagge',this)">🏖 Spiagge</button>
   <button onclick="showPage('mangiare',this)">🥗 Mangiare</button>
+  <button onclick="showPage('ristoranti',this)">🍽 Ristoranti</button>
+  <button onclick="showPage('ristoranti',this)">🍽 Ristoranti</button>
   <button onclick="showPage('greco',this)">🇬🇷 Greco</button>
   <button onclick="showPage('tempi',this)">🚗 Tempi</button>
   <button onclick="showPage('budget',this)">💶 Budget</button>
   <button onclick="showPage('parcheggio',this)">🅿️ Parcheggio</button>
   <button onclick="showPage('extra',this)">✨ Extra</button>
+  <button onclick="showPage('checklist',this)">✅ Checklist</button>
 </nav>
 
 <!-- ═══════════════ HOME ═══════════════ -->
@@ -979,6 +982,904 @@ function showPage(id, btn) {
     </tr>
   </table>
 
+</div>
+
+
+<!-- ═══════════════ CHECKLIST ═══════════════ -->
+<div id="page-checklist" class="page">
+  <h2 class="section-title">✅ Checklist Valigia</h2>
+  <p style="margin-bottom:1rem;font-size:0.88rem;color:#666">Clicca su ogni voce per spuntarla. Si salva automaticamente.</p>
+
+  <div style="background:#e0eef8;border-radius:4px;padding:0.7rem 1rem;margin-bottom:1.5rem;font-size:0.85rem;color:#1e3a5f;display:flex;justify-content:space-between;align-items:center">
+    <span>Progresso: <strong id="cl-progress">0 / 0</strong></span>
+    <button onclick="resetChecklist()" style="background:none;border:1px solid #1e3a5f;color:#1e3a5f;padding:0.2rem 0.8rem;border-radius:3px;font-size:0.78rem;cursor:pointer">↺ Reset</button>
+  </div>
+
+  <div id="checklist-container"></div>
+</div>
+
+<script>
+var clSections = [
+  {
+    icon: "👙", title: "Mare e spiaggia",
+    items: [
+      {t:"3 costumi (verde, blu, bordeaux)", note:""},
+      {t:"Asciugamano microfibra", note:"già ce l'hai ✓"},
+      {t:"Scarpette da scoglio", note:"obbligatorie per Anthony Quinn Bay"},
+      {t:"Infradito floreali", note:"nello zaino"},
+      {t:"Custodia impermeabile telefono", note:"già ce l'hai ✓"},
+      {t:"Cappello", note:"puoi comprarlo a Rodi"},
+    ]
+  },
+  {
+    icon: "👗", title: "Vestiti giorno",
+    items: [
+      {t:"Top lilla traforato", note:""},
+      {t:"Top turchese crop", note:""},
+      {t:"Top verde pizzo", note:""},
+      {t:"Top azzurro rigato", note:""},
+      {t:"Top bianco pizzo", note:""},
+      {t:"Shorts nero", note:""},
+      {t:"Shorts beige", note:""},
+      {t:"Vestito fantasia multicolor", note:""},
+      {t:"Vestito azzurro smock", note:""},
+      {t:"Vestito verde scuro bottoni", note:""},
+      {t:"Vestito denim floreale", note:""},
+    ]
+  },
+  {
+    icon: "✨", title: "Vestiti sera",
+    items: [
+      {t:"Vestito rosso lungo", note:"arrotolalo stretto"},
+      {t:"Vestito azzurro/navy", note:""},
+      {t:"Vestito blu crinkle", note:"leggerissimo"},
+      {t:"Bomber bianco", note:"indossalo sull'aereo"},
+    ]
+  },
+  {
+    icon: "👟", title: "Scarpe",
+    items: [
+      {t:"Scarpe chiuse per Lindos", note:"indossale sull'aereo"},
+      {t:"Infradito floreali", note:"nello zaino scomparto scarpe"},
+      {t:"Scarpette da scoglio", note:"nello zaino scomparto scarpe"},
+    ]
+  },
+  {
+    icon: "💆", title: "Capelli",
+    items: [
+      {t:"Shampoo solido Lush", note:"non conta come liquido"},
+      {t:"Balsamo Kérastase", note:"flaconcino 100ml"},
+      {t:"Olio Kérastase", note:"flaconcino 100ml"},
+      {t:"Termoprotettore Kérastase", note:"flaconcino 100ml"},
+      {t:"Spray solare capelli", note:""},
+      {t:"Spazzola / pettine", note:""},
+      {t:"Elastici e mollette", note:""},
+      {t:"Dreame phon", note:"nel trolley"},
+    ]
+  },
+  {
+    icon: "🧴", title: "Viso e corpo",
+    items: [
+      {t:"Daylong crema solare", note:"puoi portarla intera da Bergamo"},
+      {t:"Doposole", note:"compri a Rodi"},
+      {t:"Struccante / salviettine", note:""},
+      {t:"Crema viso mattina", note:""},
+      {t:"Crema viso sera", note:""},
+      {t:"Contorno occhi", note:""},
+      {t:"Siero", note:""},
+    ]
+  },
+  {
+    icon: "💄", title: "Make up",
+    items: [
+      {t:"Base / BB cream", note:""},
+      {t:"Correttore", note:""},
+      {t:"Mascara", note:""},
+      {t:"Matita occhi", note:""},
+      {t:"Rossetti / gloss", note:""},
+      {t:"Blush o bronzer", note:""},
+      {t:"Cipria", note:""},
+    ]
+  },
+  {
+    icon: "🪥", title: "Igiene base",
+    items: [
+      {t:"Spazzolino", note:""},
+      {t:"Dentifricio formato viaggio", note:""},
+      {t:"Filo interdentale", note:""},
+      {t:"Deodorante", note:""},
+      {t:"Rasoio", note:""},
+      {t:"Profumo", note:"flaconcino 100ml"},
+    ]
+  },
+  {
+    icon: "💊", title: "Farmacia",
+    items: [
+      {t:"Pillola", note:""},
+      {t:"Panadol Extra", note:""},
+      {t:"Ibuprofene", note:""},
+      {t:"Anti fiacche", note:""},
+      {t:"Cerotti", note:""},
+      {t:"Fermenti lattici", note:""},
+      {t:"Medicinali personali", note:""},
+    ]
+  },
+  {
+    icon: "📱", title: "Tech",
+    items: [
+      {t:"Telefono + caricatore", note:""},
+      {t:"Powerbank", note:"nello zaino"},
+      {t:"Cuffie", note:""},
+      {t:"Dreame phon + caricatore", note:"nel trolley"},
+    ]
+  },
+  {
+    icon: "📄", title: "Documenti (mini borsetta)",
+    items: [
+      {t:"Carta d'identità o passaporto", note:"importante!"},
+      {t:"Patente di guida", note:"per l'auto a noleggio"},
+      {t:"Voucher volo Ryanair", note:"F1L88G — app o stampa"},
+      {t:"Voucher auto a noleggio", note:"da prenotare"},
+      {t:"Voucher hotel", note:""},
+      {t:"CEAM — tessera sanitaria europea", note:"richiedila alla cassa malati"},
+      {t:"Carta di credito IKEA", note:"per la cauzione auto 800€"},
+    ]
+  },
+  {
+    icon: "🎒", title: "Zaino (sotto il sedile)",
+    items: [
+      {t:"Infradito + scarpette da scoglio", note:"scomparto scarpe"},
+      {t:"Powerbank", note:""},
+      {t:"Cuffie", note:""},
+      {t:"Snack per il volo", note:""},
+      {t:"Mini borsetta documenti", note:""},
+      {t:"Borsa da spiaggia pieghevole", note:"da usare ogni giorno a Rodi"},
+    ]
+  },
+  {
+    icon: "🏛", title: "Da fare prima di partire",
+    items: [
+      {t:"Prenotare auto a noleggio", note:"EXER o simile su DiscoverCars/Booking"},
+      {t:"Prenotare biglietto Acropoli Lindos", note:"etickets.culture.gr — almeno 1 settimana prima"},
+      {t:"Richiedere CEAM dalla cassa malati", note:"gratuita"},
+      {t:"Scaricare Google Maps offline Rodi", note:"impostazioni → scarica area offline"},
+      {t:"Installare Windy", note:"windy.com — per meteo mare"},
+      {t:"Check-in Ryanair online", note:"si apre 2 giorni prima — 19 giugno"},
+      {t:"Caricare itinerario_rodi.html sul telefono", note:"o aprire malzah310.github.io/Rodi2026"},
+      {t:"Comprare flaconcini da 100ml", note:"per Kérastase"},
+      {t:"Comprare shampoo solido Lush", note:""},
+    ]
+  },
+];
+
+function renderChecklist() {
+  var state = JSON.parse(localStorage.getItem('rodi_cl_v2') || '{}');
+  var container = document.getElementById('checklist-container');
+  if (!container) return;
+  container.innerHTML = '';
+  var total = 0, done = 0;
+
+  clSections.forEach(function(sec, si) {
+    var secDiv = document.createElement('div');
+    secDiv.style.cssText = 'margin-bottom:1.5rem;border:1px solid #e0d8c0;border-radius:4px;overflow:hidden;background:#fff';
+
+    var secDone = sec.items.filter(function(_,ii){ return state[si+'-'+ii]; }).length;
+    var allDone = secDone === sec.items.length;
+
+    secDiv.innerHTML = '<div style="background:'+(allDone?'#2a5218':'#6b4400')+';color:'+(allDone?'#eaf5e0':'#f5e8c8')+';padding:0.6rem 1rem;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:bold;font-size:0.95rem">'+sec.icon+' '+sec.title+'</span><span style="font-size:0.78rem;opacity:0.8">'+secDone+'/'+sec.items.length+'</span></div>';
+
+    var itemsDiv = document.createElement('div');
+    itemsDiv.style.padding = '0.3rem 0';
+
+    sec.items.forEach(function(item, ii) {
+      total++;
+      var key = si+'-'+ii;
+      var checked = !!state[key];
+      if (checked) done++;
+
+      var itemDiv = document.createElement('div');
+      itemDiv.style.cssText = 'display:flex;align-items:flex-start;gap:0.7rem;padding:0.5rem 1rem;cursor:pointer;transition:background 0.15s;border-radius:6px;margin:0 0.3rem';
+      if (checked) itemDiv.style.background = '#eaf5e0';
+
+      itemDiv.innerHTML = '<div style="width:18px;height:18px;min-width:18px;border:2px solid '+(checked?'#2a5218':'#c8a050')+';border-radius:4px;margin-top:1px;display:flex;align-items:center;justify-content:center;background:'+(checked?'#2a5218':'white')+'"><span style="color:white;font-size:0.7rem;opacity:'+(checked?1:0)+'">✓</span></div>'
+        +'<div><div style="font-size:0.88rem;color:'+(checked?'#999':'#1a1208')+';text-decoration:'+(checked?'line-through':'none')+'">'+item.t+'</div>'
+        +(item.note?'<div style="font-size:0.75rem;color:#999;font-style:italic">'+item.note+'</div>':'')
+        +'</div>';
+
+      itemDiv.addEventListener('click', function() {
+        state[key] = !state[key];
+        localStorage.setItem('rodi_cl_v2', JSON.stringify(state));
+        renderChecklist();
+      });
+
+      itemsDiv.appendChild(itemDiv);
+    });
+
+    secDiv.appendChild(itemsDiv);
+    container.appendChild(secDiv);
+  });
+
+  document.getElementById('cl-progress').textContent = done + ' / ' + total;
+  if (done === total && total > 0) {
+    document.getElementById('cl-progress').textContent = done + ' / ' + total + ' 🎉 Tutto pronto!';
+  }
+}
+
+function resetChecklist() {
+  if (confirm('Azzerare tutti i check?')) {
+    localStorage.removeItem('rodi_cl_v2');
+    renderChecklist();
+  }
+}
+
+// Init checklist when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  renderChecklist();
+});
+
+// Also render when switching to checklist page
+var origShowPage = window.showPage;
+window.showPage = function(id, btn) {
+  origShowPage(id, btn);
+  if (id === 'checklist') renderChecklist();
+};
+</script>
+
+
+<!-- ═══════════════ RISTORANTI ═══════════════ -->
+<div id="page-ristoranti" class="page">
+  <h2 class="section-title">🍽 Ristoranti & Bar</h2>
+  <p style="margin-bottom:1rem;font-size:0.85rem;color:#666;font-style:italic">Tutti verificati aperti. Badge verde = ottime opzioni vegetariane. Organizzati per zona.</p>
+  <div style="background:#eaf5e0;border-left:3px solid #2a5218;padding:0.6rem 0.9rem;margin-bottom:1.2rem;font-size:0.8rem;color:#2a5218;border-radius:0 4px 4px 0">
+    🥗 Dire sempre: <strong>"horis kreas, horis psari"</strong> = senza carne, senza pesce. Piatti veg sicuri: imam bayildi, fava, spanakopita, horiatiki, dolmades, gemista, tirokafteri.
+  </div>
+<h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🏛 Città Medievale — ristoranti</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">ONO<span style="background:#2a5218;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">100% VEG</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2040 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">100% vegetariano e vegano. Porzioni generose, cibo delizioso. Uno dei migliori in assoluto.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Moussaka veg, mushroom linguine, bang bang cauliflower. Brownie omaggio!</div>
+    <div style="font-size:0.72rem;color:#888">🕐 9:00–22:00</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso domenica</div>
+    <a href="https://maps.google.com/?q=ONO+restaurant+Rhodes+old+town" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Sacred Garden Plant Based Deli<span style="background:#2a5218;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">100% VEG</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 5.0</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">96 rec.</div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Fully vegan, tutto fatto in casa dalla proprietaria Kiki. Una chicca nascosta.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Gyros con seitan homemade, formaggi vegani, croissant, torte artigianali.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 11:00–20:00</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso lunedì</div>
+    <a href="https://maps.google.com/?q=Sacred+Garden+Plant+Based+Deli+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Hamam Cafe<span style="background:#2a5218;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">100% VEG</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.9</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">438 rec.</div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Tapas veg/vegane in un bellissimo cortile con bouganville. Atmosfera intima e tranquilla.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Feta fritta col miele (il cult!), fiori di zucca, dolmades, dip piccante con pita.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 11:00–24:00</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso domenica</div>
+    <a href="https://maps.google.com/?q=Hamam+cafe+Rhodes+old+town" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">At Thomas<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">1820 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Sotto le mura medievali, lontano dalle vie battute. Terrazza panoramica sulle mura illuminate di sera.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Insalata di fagioli, melanzane, calamari, gamberi Thomas. Baklava con gelato omaggio.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 12:00–23:00</div>
+    <a href="https://maps.google.com/?q=At+Thomas+restaurant+Rhodes+old+town" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna Kostas<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">1841 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Family-run da 45 anni, lontano dalle vie affollate. Lei: verdure e fritti. Lui: frutti di mare.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Dip misti con pane caldo, zucchine fritte, insalata Pandaisia, linguine ai frutti di mare.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 12:00–22:30</div>
+    <a href="https://maps.google.com/?q=Taverna+Kostas+Rhodes+old+town" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Nimmos<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2416 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Family-run vicino al porto. Porzioni enormi, rooftop e giardino. Scelta piena per tutti.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Gyros, mezze, tanti piatti vegetariani, carne e pesce. Vista dalla terrazza.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–23:00</div>
+    <a href="https://maps.google.com/?q=Nimmos+restaurant+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Ta Kardasia<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">1116 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Rooftop tranquillo lontano dalla folla, ottima cucina greca. Aperto solo cena.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Gyros croccanti, souvlaki, piatti vegetariani. Terrazza panoramica.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 17:00–22:30</div>
+    <a href="https://maps.google.com/?q=Ta+Kardasia+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">PANERI<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">1167 rec. · <span style="color:#096055;font-weight:bold">€€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Cucina mediterranea creativa, raffinato. Per una cena speciale.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Whipped tzatziki mousse, feta col miele, piatti creativi e ben presentati.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 12:30–22:30</div>
+    <a href="https://maps.google.com/?q=PANERI+restaurant+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Mama Sofia<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.5</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">5392 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Il più famoso della città vecchia. Giardino sul retro, tantissima scelta per tutti.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Moussaka in pentola di coccio bollente, piatto di pesce per due, souvlaki. Dolce omaggio.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 11:00–22:30</div>
+    <a href="https://maps.google.com/?q=Mama+Sofia+Rhodes+old+town" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Andrea's Restaurant<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">829 rec. · <span style="color:#096055;font-weight:bold">€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Economico con musica greca dal vivo ogni sera. Accogliente anche a tarda ora.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Antipasto misto (tzatziki, taramasalata, hummus, melanzane), moussaka, bekri.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–00:30</div>
+    <a href="https://maps.google.com/?q=Andrea+Restaurant+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Nomad Mediterranean<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">535 rec. · <span style="color:#096055;font-weight:bold">€€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Romantico, mura storiche + interni moderni. Cortile piantumato. Solo cena, all'aperto.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Menu gastronomico mediterraneo, cocktails eccellenti, piatti creativi.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 18:30–22:30</div>
+    <a href="https://maps.google.com/?q=Nomad+Mediterranean+Gastronomy+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🍹 Città Medievale — bar & aperitivo</h3><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Balcony 961</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 5.0</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">200 rec.</div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Il migliore in assoluto! Terrazza sulla piazza principale, Sami il proprietario è leggendario. Non è invadente — non ti trascina dentro.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Cocktails eccezionali, birre fredde. Ingresso nascosto — cerca le scale giuste!</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–02:00</div>
+    <a href="https://maps.google.com/?q=Balcony+961+Rhodes+old+town" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">The Last Butler</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2563 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Il più famoso. Stile anni '20, ogni cocktail ha una storia nel menu. Molto instagrammabile, atmosfera unica.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Menu cocktails narrativo, pinsa, cheesecake. All'aperto sotto copertura.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 8:00–02:00</div>
+    <a href="https://maps.google.com/?q=The+Last+Butler+Rhodes" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Nook Cocktail Bar</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.9</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">168 rec.</div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Piccolo, tranquillo, ingredienti freschi coltivati lì. Gatti inclusi. Perfetto per chi vuole evitare la folla.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Cocktails homemade con erbe fresche, birra artigianale dell'isola vicina, sangria.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 17:00–01:30</div>
+    <a href="https://maps.google.com/?q=Nook+Cocktail+Bar+Rhodes" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Bags n' Tales</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.9</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">55 rec.</div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Cocktails da passeggio in sacchettino! Originalissimo — fatti guardando il bartender, poi girare per i vicoli.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Aperol hibiscus spritz, cocktails creativi da asporto. Buon rapporto qualità-prezzo.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:30–00:30</div>
+    <a href="https://maps.google.com/?q=Bags+Tales+Cocktails+Rhodes" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Minos Roof Garden Cafe</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">757 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Rooftop con vista su palazzo, porto e acropoli. Semplice, niente pretese — la vista è tutto.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Birre, vini, cocktails semplici, qualche snack. Aperto dalla mattina.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 8:00–22:30</div>
+    <a href="https://maps.google.com/?q=Minos+Roof+Garden+Cafe+Rhodes" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Roloi Cafe (Torre dell'Orologio)</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">79 rec.</div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">5€ ingresso incluso un drink — la vista migliore della città medievale dall'alto. Nascosto ma vale.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Un drink incluso nel biglietto. Prezzi moderati per altri consumi.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 9:00–23:00</div>
+    <a href="https://maps.google.com/?q=Roloi+clock+tower+cafe+Rhodes" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Decan Bar</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.9</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">41 rec.</div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Gemma nascosta in un vicolo. Cocktails creativi e colazioni. Lo staff ti riconosce dalla seconda visita.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 El Jefe (cocktail signature), brunch, torta con frutta e miele.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 15:00–23:00</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso lunedì</div>
+    <a href="https://maps.google.com/?q=Decan+Bar+Rhodes+old+town" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Thetis</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">443 rec. · <span style="color:#096055;font-weight:bold">€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Promozione 1+1 cocktail per persona. Atmosfera bella, aperti fino a tardi.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Mojito, cocktails, hamburger, wrap. Happy hour 1+1.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 9:00–03:00</div>
+    <a href="https://maps.google.com/?q=Thetis+bar+Rhodes" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Mozaik Cocktail Bar</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.5</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">418 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Piazza Arionos, DJ live, mojito eccellente. Per chi vuole ballare un po' dopo cena.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Mojito 11€, aperol, cocktails. DJ set serale.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 20:00–03:00</div>
+    <a href="https://maps.google.com/?q=Mozaik+cocktail+bar+Rhodes+old+town" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🏡 Koskinou — 10 min da Rodi (vicoli del paesino)</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna Giannis<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">556 rec. · <span style="color:#096055;font-weight:bold">€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Seduti all'aperto tra i vicoli del villaggio sotto pergolati di viti. Una delle esperienze più belle dell'isola.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Cucina greca autentica, moussaka eccellente, starters veg ottimi. Posti limitati — prenotare.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 18:00–23:30</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso martedì</div>
+    <a href="https://maps.google.com/?q=Taverna+Giannis+Koskinou+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna Tasos</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">819 rec. · <span style="color:#096055;font-weight:bold">€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Le migliori costolette di agnello di Rodi secondo recensioni fino a luglio 2025. Vicoli autentici.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Lamb chops venduti al chilo, feta piccante, cheese balls. Per chi mangia carne.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 18:00–00:00</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso lun-mar</div>
+    <a href="https://maps.google.com/?q=Taverna+Tasos+Koskinou+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Koutsouki Ta Mandala<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">613 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Taverna tradizionale nel paesino. Tzatziki cremoso, atmosfera da 80 anni fa.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Biftekia, tzatziki cremoso, mixed grill, piatti greci classici.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 12:30–00:00</div>
+    <a href="https://maps.google.com/?q=Koutsouki+Ta+Mandala+Koskinou+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🌊 Costa Kallithea/Faliraki — 15-20 min da Rodi</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Kounna Beach & Resto Bar<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2695 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Il posto più instagrammabile della costa! Altalene sul bordo del precipizio con vista sulla baia. Vista mozzafiato.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Smashed potatoes (cult!), halloumi, pasta, mezze, cocktails. Vista al tramonto spettacolare.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 9:00–23:00</div>
+    <a href="https://maps.google.com/?q=Kounna+Beach+Resto+Bar+Ladiko+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">NAYA Beach Club<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">1176 rec. · <span style="color:#096055;font-weight:bold">€€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Beach club elegante con lettini, call button sul lettino. Per una giornata lusso sul mare.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Sushi, surf n' turf platter, Mediterranean pita e dips, daiquiri. Min 60€ per lettino.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–21:00</div>
+    <a href="https://maps.google.com/?q=NAYA+Beach+Club+Kallithea+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Ladiko Restaurant Beach Bar<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.3</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">3674 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Sul mare a Ladiko, vicino ad Anthony Quinn Bay. Comodo per pranzo dopo la spiaggia.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Greek salad, pesce, insalate. Min 15€ a persona.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–21:00</div>
+    <a href="https://maps.google.com/?q=Ladiko+Restaurant+Beach+Bar+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🏖 Tsambika · Stegna · Archangelos — 30-40 min da Rodi</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna Athiri<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span><span style="background:#a06000;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;margin-left:5px">SOLO CONTANTI</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">814 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Giardino tipico greco sulla strada per Tsambika. Moussaka eccellente, halloumi. ⚠️ Solo contanti!</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Greek salad, halloumi, moussaka, tzatziki, pita. Anguria omaggio!</div>
+    <div style="font-size:0.72rem;color:#888">🕐 11:30–21:00</div>
+    <a href="https://maps.google.com/?q=Taverna+Athiri+Tsambika+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Maria Taverna Stegna Beach<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2081 rec. · <span style="color:#096055;font-weight:bold">€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Proprio sulla spiaggia di Stegna. Cibo casalingo eccezionale, atmosfera autentica con gatti e musica greca.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Dip di melanzane con pita calda, gemista (verdure ripiene), fritture. Gelatino omaggio.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 13:00–22:00</div>
+    <a href="https://maps.google.com/?q=Maria+Taverna+Stegna+Beach+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Maria Taverna Archangelos<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2247 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Sulla strada per Tsambika. Tante opzioni gluten free, friggono tutto separatamente.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Halloumi, Greek salad, gemista, fritture. Parco giochi, parcheggio all'ombra.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 11:30–21:30</div>
+    <a href="https://maps.google.com/?q=Maria+Taverna+Archangelos+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Tsambika Restaurant Beach Bar<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.5</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">1190 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Sulla spiaggia di Tsambika. Servizio veloce, porzioni grandi, prezzi giusti.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Greek salad, calamari, gyros con patatine fresche. Gelatino omaggio.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 9:00–19:00</div>
+    <a href="https://maps.google.com/?q=Tsampika+Restaurant+Beach+Bar+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🏛 Lindos — 50 min da Rodi (giorno 4)</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">T-Veg<span style="background:#2a5218;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">100% VEG</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.9</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">616 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Vegano al 100% con rooftop e vista sull'Acropoli e sul mare. Il migliore per voi a Lindos.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Pasta perfetta, gyros con seitan, torta all'arancia sciroppata.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 9:00–22:30</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso domenica</div>
+    <a href="https://maps.google.com/?q=T-Veg+Lindos+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Ginger<span style="background:#2a5218;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">100% VEG</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">614 rec.</div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Rooftop minuscolo con vista sul mare. Colazione e pranzo. Molto instagrammabile, posti limitati.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Spanakopita, bougatsa, avocado toast, yogurt bowl, lemonade fresca.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 8:00–22:00</div>
+    <a href="https://maps.google.com/?q=Ginger+restaurant+Lindos+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Mystilli Roof Garden<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">272 rec. · <span style="color:#096055;font-weight:bold">€€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Rooftop elegante con menu vegetariano separato. Per una cena speciale a Lindos.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Menu veg separato + carne/pesce. Orzo con gamberi, bistecca, lamb chops.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 16:30–23:00</div>
+    <a href="https://maps.google.com/?q=Mystilli+Roof+Garden+Lindos" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Mythos All Day Restaurant<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2189 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Rooftop con vista spettacolare su Lindos. Tornati tre volte nella stessa vacanza secondo le recensioni.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Bistecca enorme, chicken roulade, mushroom dish. Vista dalla terrazza su tutto Lindos.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–22:30</div>
+    <a href="https://maps.google.com/?q=Mythos+All+Day+Restaurant+Lindos+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Village Cafe Lindos<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">464 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Cortile ombreggiato nascosto lontano dalla folla. Perfetto per colazione o brunch.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Pastries, Greek yogurt bowl, Italian sandwich, coffee. Menu gluten free.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 8:00–15:30</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso domenica</div>
+    <a href="https://maps.google.com/?q=Village+Cafe+Lindos+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🍹 Lindos — bar</h3><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Dreams Cocktail Bar</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">239 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Rooftop con vista sull'Acropoli di Lindos. Recensioni confermate luglio 2025. Il più instagrammabile di Lindos.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Cocktails creativi, vista Acropoli, chill music.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–03:00</div>
+    <a href="https://maps.google.com/?q=Dreams+Cocktail+Bar+Lindos+Rhodes" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #d0c8e8;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#f8f4ff;padding:0.6rem 0.9rem;border-bottom:1px solid #e8e0f8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Eklekton Brunch & Cocktail Bar</div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">345 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Rooftop centrale a Lindos, brunch e cocktails, vicino all'Acropoli. Staff gentilissimo.</div>
+    <div style="background:#f2eefe;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#3d1f70;margin-bottom:0.4rem">🍹 Smoothies con frutta fresca, cocktails, colazione. Prezzi migliori rispetto ad altri bar.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 9:00–22:00</div>
+    <a href="https://maps.google.com/?q=Eklekton+Brunch+Cocktail+Bar+Lindos" target="_blank" style="display:inline-block;background:#3d1f70;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🍷 Embonas — 50 min da Rodi (giorno 8 jolly)</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Maroulakis Traditional Cuisine<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.8</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2073 rec. · <span style="color:#096055;font-weight:bold">€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Il migliore del paese, famiglia da 75 anni. Cibo freschissimo, porzioni generose, servizio caloroso.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Pitaroudia (polpette di ceci), Greek salad, tzatziki, pane fatto in casa, vino della casa.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 12:00–21:00</div>
+    <a href="https://maps.google.com/?q=Maroulakis+Embonas+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna Savvas<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">1381 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Fiori di zucchina ripieni eccellenti. Ottimo vino rosso della casa nella zona vinicola.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Fiori di zucchina ripieni, zucchine, pane fatto in casa, vino locale Athiri.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–22:00</div>
+    <a href="https://maps.google.com/?q=Taverna+Savvas+Embonas+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🏯 Monolithos · Siana — giorno 7</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Old Monolithos Taverna<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">815 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">In piazza della chiesa a Monolithos. Pita freschissima, posto tranquillo. Menu del giorno a 10€.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Pita fatta in casa, insalata fresca, piatti del giorno, formaggi.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 12:30–20:30</div><div style="font-size:0.73rem;color:#a02020;margin-top:3px">⚠️ Chiuso lun-mar</div>
+    <a href="https://maps.google.com/?q=Old+Monolithos+Taverna+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Greek House Monolithos<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">777 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Vino biologico fatto in casa, ingredienti coltivati dai proprietari. La migliore moussaka.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Moussaka, verdure dell'orto, vino biologico homemade. Aperitivo omaggio.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 12:00–19:00</div>
+    <a href="https://maps.google.com/?q=Greek+House+Monolithos+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna Manos Siana<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">492 rec. · <span style="color:#096055;font-weight:bold">€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Sulla strada del giorno 7, nel paesino di Siana. Rooftop con vista, prodotti della mamma.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Prodotti fatti in casa, piatti tradizionali, miele di fichi locale.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–19:00</div>
+    <a href="https://maps.google.com/?q=Taverna+Manos+Siana+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">🌅 Costa ovest — tramonto (sul percorso giorno 7)</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Sunset Beach Bar Theologos<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.9</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">687 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Il tramonto più bello di Rodi — aerei che decollano sopra i windsurf sul mare. Lettini gratuiti con consumazione.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Caesar salad eccezionale, chicken bowl, smoothies, burgers. Vista unica al tramonto.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:00–23:00</div>
+    <a href="https://maps.google.com/?q=Sunset+Beach+Bar+Restaurant+Theologos+Rhodes" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><h3 style="font-size:1rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.5rem 0 0.8rem">⛵ Symi — giorno 10</h3><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna To Spitiko<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">698 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Opzioni veg/vegane segnalate + pesce fresco. Vista sull'isola. Gluten free disponibile.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Imam bayildi, piatto di antipasti greci, halloumi col miele, pesce fresco.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 10:30–21:00</div>
+    <a href="https://maps.google.com/?q=Taverna+To+Spitiko+Symi" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna Zoe<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.6</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">429 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Dove mangiano i locali, 10 min a piedi in salita. Tutto fatto in casa, lontano dai turisti.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Specialità locali di Symi che variano ogni giorno. Menu spiegato dalla proprietaria.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 12:00–15:00 / 19:00–23:00</div>
+    <a href="https://maps.google.com/?q=Taverna+Zoe+Symi+Greece" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div><div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:0.8rem;overflow:hidden">
+  <div style="background:#faf7f0;padding:0.6rem 0.9rem;border-bottom:1px solid #f0ece0">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="font-weight:bold;font-size:0.95rem;color:#1a1208">Taverna Haris<span style="background:#5a8a2a;color:white;font-size:0.62rem;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:5px">VEG ✓</span></div>
+      <div style="font-size:0.82rem;color:#c8972a;font-weight:bold;white-space:nowrap;margin-left:0.5rem">⭐ 4.7</div>
+    </div>
+    <div style="font-size:0.7rem;color:#999;margin-top:2px">2005 rec. · <span style="color:#096055;font-weight:bold">€€</span></div>
+  </div>
+  <div style="padding:0.6rem 0.9rem">
+    <div style="font-size:0.83rem;color:#555;margin-bottom:0.4rem">Sul porto con musica greca tradizionale. L'hummus migliore mai mangiato secondo le recensioni.</div>
+    <div style="background:#fdf6e3;padding:0.4rem 0.6rem;border-radius:3px;font-size:0.78rem;color:#6b4400;margin-bottom:0.4rem">🍴 Hummus eccezionale, pane fresco, saganaki, frappé. Vista sul porto di Gialos.</div>
+    <div style="font-size:0.72rem;color:#888">🕐 9:00–23:00</div>
+    <a href="https://maps.google.com/?q=Taverna+Haris+Symi+Greece" target="_blank" style="display:inline-block;background:#1e3a5f;color:white;padding:0.25rem 0.7rem;border-radius:3px;font-size:0.75rem;text-decoration:none;margin-top:0.4rem">📍 Maps</a>
+  </div>
+</div>  <div style="background:#fdf6e3;border-left:3px solid #c8a050;padding:0.6rem 0.9rem;margin-top:1.2rem;font-size:0.8rem;color:#6b4400;font-style:italic;border-radius:0 4px 4px 0">
+    💡 In alta stagione (luglio) i posti più belli si riempiono — per At Thomas, Mystilli Roof Garden, Nomad e Ta Kardasia conviene prenotare un tavolo in anticipo, specialmente per il rooftop.
+  </div>
 </div>
 
 </body>
