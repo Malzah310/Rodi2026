@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <p>11 notti &bull; Città Medievale &bull; Vegetariana &bull; Con calma</p>
       <div class="dates">21 GIUGNO &ndash; 2 LUGLIO 2026</div>
     </div>
-  </div>
+  
 
   <div class="flight-bar">
     <div class="flight-box">
@@ -219,6 +219,8 @@ document.addEventListener('DOMContentLoaded', function() {
   </table>
 
   <div class="footer">Καλό ταξίδι — Buone vacanze a Rodi 🏛</div>
+</div>
+
 </div>
 
 <!-- ═══════════════ MAPPA ═══════════════ -->
@@ -672,7 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div style="font-size:1.1rem;font-weight:bold;margin-bottom:0.3rem">La frase da dire SEMPRE</div>
     <div style="font-size:1.4rem;color:#7db8e8;font-weight:bold">«Χωρίς κρέας, χωρίς ψάρι»</div>
     <div style="font-size:0.88rem;color:#cde;margin-top:0.3rem">= Senza carne, senza pesce — si pronuncia: <em>Ho-RIS KRE-as, ho-RIS PSA-ri</em></div>
-  </div>
+  
 
   <!-- SICURAMENTE VEGETARIANI -->
   <h3 style="font-size:1.1rem;color:#2a5218;border-bottom:2px solid #2a5218;padding-bottom:0.3rem;margin-bottom:1rem">✅ Sicuramente vegetariani</h3>
@@ -934,6 +936,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </div>
 
+</div>
+
 <!-- ═══════════════ GRECO ═══════════════ -->
 <div id="page-greco" class="page">
   <h2 class="section-title">🇬🇷 Frasi utili in greco</h2>
@@ -987,7 +991,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <div style="background:#eaf5e0;border-left:3px solid #2a5218;padding:0.7rem 1rem;margin-bottom:1.5rem;font-size:0.85rem;color:#2a5218;border-radius:0 4px 4px 0">
     ✅ <strong>Regola generale:</strong> fuori dalla città medievale di Rodi il parcheggio è quasi sempre gratuito. Il costo è solo in città e a Lindos.
-  </div>
+  
 
   <!-- CITTÀ MEDIEVALE -->
   <h3 style="font-size:1.05rem;color:#6b4400;border-bottom:1px solid #e0d8c0;padding-bottom:0.3rem;margin:1.2rem 0 0.8rem">🏛 Città Medievale di Rodi — base della vacanza</h3>
@@ -1176,6 +1180,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </div>
 
+</div>
+
 <!-- ═══════════════ ESPERIENZE EXTRA ═══════════════ -->
 <div id="page-extra" class="page">
   <h2 class="section-title">✨ Esperienze extra</h2>
@@ -1200,7 +1206,7 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <div style="font-size:0.8rem;color:#555">🚗 Rodi → Siana: <strong style="color:#096055">1h</strong> · Sulla strada per Monolithos (5 min prima)</div>
     </div>
-  </div>
+  
 
   <!-- KOSKINOU -->
   <div style="border:1px solid #e0d8c0;border-radius:4px;background:#fff;margin-bottom:1.2rem;overflow:hidden">
@@ -1417,6 +1423,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 
+</div>
+
 <!-- ═══════════════ CHECKLIST ═══════════════ -->
 <div id="page-checklist" class="page">
   <h2 class="section-title">✅ Checklist Valigia</h2>
@@ -1425,10 +1433,9 @@ document.addEventListener('DOMContentLoaded', function() {
   <div style="background:#e0eef8;border-radius:4px;padding:0.7rem 1rem;margin-bottom:1.5rem;font-size:0.85rem;color:#1e3a5f;display:flex;justify-content:space-between;align-items:center">
     <span>Progresso: <strong id="cl-progress">0 / 0</strong></span>
     <button onclick="resetChecklist()" style="background:none;border:1px solid #1e3a5f;color:#1e3a5f;padding:0.2rem 0.8rem;border-radius:3px;font-size:0.78rem;cursor:pointer">↺ Reset</button>
-  </div>
+  
 
   <div id="checklist-container"></div>
-</div>
 
 <script>
 var clSections = [
@@ -1649,6 +1656,9 @@ document.addEventListener('DOMContentLoaded', function() {
   renderChecklist();
 });
 </script>
+</div>
+
+</div>
 
 <!-- ═══════════════ RISTORANTI ═══════════════ -->
 <div id="page-ristoranti" class="page">
@@ -1656,7 +1666,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <p style="margin-bottom:0.8rem;font-size:0.83rem;color:#666;font-style:italic">Tutti verificati aperti. Badge verde = vegetariano. Organizzati per zona — clicca per aprire.</p>
   <div style="background:#eaf5e0;border-left:3px solid #2a5218;padding:0.5rem 0.9rem;margin-bottom:1.2rem;font-size:0.78rem;color:#2a5218;border-radius:0 4px 4px 0">
     🥗 Ricorda: <strong>"horis kreas, horis psari"</strong> = senza carne, senza pesce.
-  </div>
+  
 <div style="border:1px solid #e0d8c0;border-radius:6px;overflow:hidden;margin-bottom:0.8rem">
   <div onclick="toggleAcc('medievale-rist')" style="background:#fdf6e3;padding:0.7rem 1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none">
     <span style="font-weight:bold;font-size:0.95rem;color:#6b4400">🏛 Città Medievale — Ristoranti (11)</span>
@@ -2020,6 +2030,9 @@ function toggleAcc(id) {
   if (ch) ch.style.transform = open ? '' : 'rotate(180deg)';
 }
 </script>
+</div>
+
+</div>
 
 <!-- ═══════════════ DIARIO ═══════════════ -->
 <div id="page-diario" class="page">
@@ -2029,10 +2042,9 @@ function toggleAcc(id) {
   <div style="background:#e0eef8;border-radius:4px;padding:0.6rem 1rem;margin-bottom:1.5rem;font-size:0.83rem;color:#1e3a5f;display:flex;justify-content:space-between;align-items:center">
     <span>Completato: <strong id="diary-progress">0 / 0</strong></span>
     <button onclick="resetDiary()" style="background:none;border:1px solid #1e3a5f;color:#1e3a5f;padding:0.2rem 0.8rem;border-radius:3px;font-size:0.75rem;cursor:pointer">↺ Reset</button>
-  </div>
+  
 
   <div id="diary-container"></div>
-</div>
 
 <script>
 var diaryDays = [
@@ -2163,6 +2175,9 @@ function resetDiary() {
 
 document.addEventListener('DOMContentLoaded', function(){ renderDiary(); });
 </script>
+</div>
+
+</div>
 
 </body>
 </html>
